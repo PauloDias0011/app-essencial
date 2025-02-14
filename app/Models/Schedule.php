@@ -1,24 +1,29 @@
 <?php
 
-namespace App\Models\Models;
+namespace App\Models;
 
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Expense extends Model
+class Schedule extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'details',
         'professor_id',
-        'total_cost',
-        'is_reimbursed',
+        'student_id',
+        'scheduled_at',
     ];
 
     public function professor()
     {
         return $this->belongsTo(User::class, 'professor_id');
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClassPlanResource\Pages;
-use App\Models\Models\ClassPlan as ModelsClassPlan;
+use App\Models\ClassPlan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,7 +12,7 @@ use Filament\Tables\Table;
 
 class ClassPlanResource extends Resource
 {
-    protected static ?string $model = ModelsClassPlan::class;
+    protected static ?string $model = ClassPlan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Planos de Aula';

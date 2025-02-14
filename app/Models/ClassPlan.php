@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Models\Models;
+namespace App\Models;
 
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Announcement extends Model
+class ClassPlan extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'student_id',
-        'content',
-        'created_by',
+        'professor_id',
+        'file_path',
     ];
 
     public function student()
@@ -21,8 +22,8 @@ class Announcement extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function creator()
+    public function professor()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'professor_id');
     }
 }
