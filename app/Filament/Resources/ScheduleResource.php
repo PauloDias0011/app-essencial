@@ -11,7 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-
+use Illuminate\Database\Eloquent\Builder;
 
 class ScheduleResource extends Resource
 {
@@ -25,6 +25,19 @@ class ScheduleResource extends Resource
             Forms\Components\Select::make('professor_id')->relationship('professor', 'name')->searchable()->label('Professor')->required(),
             Forms\Components\Select::make('student_id')->relationship('student', 'name')->searchable()->label('Aluno')->required(),
             Forms\Components\DateTimePicker::make('scheduled_at')->label('Data e Hora')->required(),
+            Forms\Components\Checkbox::make('is_recurring')
+            ->label('Agendamento Recorrente')
+            ->reactive(), // Faz o campo 'is_recurring' reagir a mudanças
+        
+        Forms\Components\Select::make('recurrence_frequency')
+            ->label('Frequência de Recorrência')
+            ->options([
+                'daily' => 'Diário',
+                'weekly' => 'Semanal',
+                'monthly' => 'Mensal',
+            ])
+            ->visible(fn (callable $get) => $get('is_recurring') === true) // Condição de visibilidade
+            ->required(fn (callable $get) => $get('is_recurring') === true), // Requerido apenas se for recorrente
         ]);
     }
 
@@ -34,6 +47,14 @@ class ScheduleResource extends Resource
             Tables\Columns\TextColumn::make('professor.name')->label('Professor'),
             Tables\Columns\TextColumn::make('student.name')->label('Aluno'),
             Tables\Columns\TextColumn::make('scheduled_at')->datetime()->label('Data e Hora'),
+            Tables\Columns\TextColumn::make('recurrence_frequency')
+                ->label('Frequência')
+                ->formatStateUsing(fn($state) => match ($state) {
+                    'daily' => 'Diariamente',
+                    'weekly' => 'Semanalmente',
+                    'monthly' => 'Mensalmente',
+                    default => 'N/A',
+                }),
         ]);
     }
     public static function getRelations(): array
@@ -49,4 +70,6 @@ class ScheduleResource extends Resource
             'edit' => EditSchedule::route('/{record}/edit'),
         ];
     }
+
+
 }

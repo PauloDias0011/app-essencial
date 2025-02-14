@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->boolean('is_recurring')->default(false);
+            $table->string('recurrence_frequency')->nullable(); // Pode ser 'daily', 'weekly', 'monthly'
         });
     }
 
