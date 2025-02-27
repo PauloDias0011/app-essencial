@@ -19,6 +19,10 @@ class Schedule extends Model
         'recurrence_frequency',
     ];
 
+    protected $casts = [
+        'recurrence_freq' => 'string', // Garante que o Laravel sempre envie uma string
+    ];
+
     public function professor()
     {
         return $this->belongsTo(User::class, 'professor_id');
