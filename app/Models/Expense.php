@@ -15,6 +15,7 @@ class Expense extends Model
         'professor_id',
         'total_cost',
         'is_reimbursed',
+        'date_expense'
     ];
 
     public function professor()
