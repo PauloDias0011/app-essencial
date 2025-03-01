@@ -16,22 +16,19 @@ use App\Filament\Resources\AnnouncementResource\Pages\CreateAnnouncement;
 use App\Filament\Resources\AnnouncementResource\Pages\EditAnnouncement;
 use App\Filament\Resources\AnnouncementResource\Pages\ViewAnnouncement;
 use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Wizard;
+use Filament\Infolists\Components\IconEntry;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\BadgeEntry;
-use Filament\Infolists\Components\Actions\Action;
-use Filament\Tables\Enums\FiltersLayout;
 
 
 class AnnouncementResource extends Resource
@@ -185,7 +182,6 @@ class AnnouncementResource extends Resource
     
             ]);
     }
-
     
     public static function getPages(): array
     {
