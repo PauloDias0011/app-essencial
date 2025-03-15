@@ -17,6 +17,7 @@ class Grade extends Model
         'subject',
         'semester',
         'grade',
+        'year',
     ];
 
     public function student()

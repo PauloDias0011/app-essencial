@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +25,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Filament::serving(function () {
+            Filament::registerNavigationGroups([
+                NavigationGroup::make()
+                    ->label('Educação')
+                    ->icon('heroicon-o-clipboard')
+                    ->collapsed(),
+                NavigationGroup::make()
+                    ->label('Gerenciamento')
+                    ->icon('heroicon-s-cog'),
+            ]);
+
+          
+        });
         Gate::before(function (User $user, string $ability) {
             return $user->isSuperAdmin() ? true: null;
         });
