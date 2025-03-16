@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Filament\Resources;
-
 use App\Filament\Resources\ScheduleResource\Pages;
 use App\Models\Schedule;
 use Filament\Forms\Components\Wizard;
@@ -17,10 +16,14 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Sidebar;
+use Filament\Infolists\Components\TableEntry;
 use Filament\Infolists\Infolist;
-use Filament\Tables\Enums\FiltersLayout;
+use App\Models\ClassPlan;
+use Filament\Infolists\Components\Split;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleResource extends Resource
@@ -111,25 +114,39 @@ class ScheduleResource extends Resource
             ], layout: FiltersLayout::AboveContent);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Section::make('📌 Informações do Agendamento')
-                ->schema([
-                    TextEntry::make('professor.name')->label('👨‍🏫 Professor'),
-                    TextEntry::make('student.name')->label('🎓 Aluno'),
-                    TextEntry::make('scheduled_at')->label('📅 Data e Hora')->dateTime(),
-                    TextEntry::make('recurrence_frequency')
-                        ->label('⏳ Frequência')
-                        ->formatStateUsing(fn($state) => match ($state) {
-                            'daily' => 'Diariamente',
-                            'weekly' => 'Semanalmente',
-                            'monthly' => 'Mensalmente',
-                            default => 'N/A',
-                        }),
-                ]),
+          
+                Section::make('📌 Informações do Agendamento')
+                    ->schema([
+                        TextEntry::make('scheduled_at')->label('📅 Data e Hora')->dateTime(),
+                        TextEntry::make('recurrence_frequency')
+                            ->label('⏳ Frequência')
+                            ->formatStateUsing(fn($state) => match ($state) {
+                                'daily' => 'Diariamente',
+                                'weekly' => 'Semanalmente',
+                                'monthly' => 'Mensalmente',
+                                default => 'N/A',
+                            }),
+                    ]),
+                Section::make('👨‍🏫 Informações do Professor')
+                    ->schema([
+                        TextEntry::make('professor.name')->label('Nome'),
+                        TextEntry::make('professor.email')->label('Email'),
+                        TextEntry::make('professor.phone')->label('Telefone')->default('Não informado'),
+                    ]),
+                Section::make('🎓 Informações do Aluno')
+                    ->schema([
+                        TextEntry::make('student.name')->label('Nome'),
+                        TextEntry::make('student.email')->label('Email'),
+                        TextEntry::make('student.phone')->label('Telefone')->default('Não informado'),
+                        TextEntry::make('student.grade_year')->label('Série/Ano')->default('Não informado'),
+                    ]),
+          
         ]);
     }
+
 
     public static function getPages(): array
     {
@@ -137,6 +154,8 @@ class ScheduleResource extends Resource
             'index' => Pages\ListSchedules::route('/'),
             'create' => Pages\CreateSchedule::route('/create'),
             'edit' => Pages\EditSchedule::route('/{record}/edit'),
+            'view' => Pages\ViewSchedule::route('/{record}/id'),
+
         ];
     }
 }

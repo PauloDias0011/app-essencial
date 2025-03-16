@@ -6,6 +6,7 @@ use Filament\Widgets\PieChartWidget;
 class StudentDistributionChart extends PieChartWidget
 {
     protected static ?string $heading = 'Distribuição de Alunos por Série';
+    protected static ?int $sort = 5;
 
     protected function getData(): array
     {

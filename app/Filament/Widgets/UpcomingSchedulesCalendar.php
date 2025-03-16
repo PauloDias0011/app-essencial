@@ -11,13 +11,17 @@ use Carbon\Carbon;
 class UpcomingSchedulesCalendar extends BaseWidget
 {
     protected static ?string $heading = '🗓️ Próximos Agendamentos';
+    protected static ?int $sort = 3;
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 Schedule::query()
-                    ->where('scheduled_at', '>=', Carbon::now())
+                    ->whereBetween('scheduled_at', [
+                        Carbon::now()->startOfWeek(),
+                        Carbon::now()->endOfWeek()
+                    ])
                     ->orderBy('scheduled_at')
                     ->limit(5)
             )

@@ -6,6 +6,7 @@ use Filament\Widgets\LineChartWidget;
 class GradeTrendChart extends LineChartWidget
 {
     protected static ?string $heading = 'Média Geral das Notas por Semestre';
+    protected static ?int $sort = 4;
 
     protected function getData(): array
     {

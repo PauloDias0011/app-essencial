@@ -6,6 +6,7 @@ use Filament\Widgets\BarChartWidget;
 class MonthlyExpensesChart extends BarChartWidget
 {
     protected static ?string $heading = 'Total de Despesas por Mês';
+    protected static ?int $sort = 3;
 
     protected function getData(): array
     {

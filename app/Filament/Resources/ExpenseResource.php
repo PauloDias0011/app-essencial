@@ -23,6 +23,7 @@ use Filament\Tables\Table;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Facades\Auth;
 
@@ -83,6 +84,10 @@ class ExpenseResource extends Resource
                     ->label('⏳ Há quanto tempo')
                     ->getStateUsing(fn ($record) => Carbon::parse($record->date_expense)->diffForHumans())
                     ->color(fn ($record) => self::getDateBadgeColor($record->date_expense)),
+                ToggleColumn::make('is_reimbursed')
+                ->label('🧾 Reembolsado')
+
+
             ])
             ->actions([
                 ViewAction::make()

@@ -9,7 +9,9 @@ use App\Models\ClassPlan;
 
 class RecentClassPlansTable extends BaseWidget
 {
+
     protected static ?string $heading = '📄 Últimos Planos de Aula';
+    protected static ?int $sort = 2;
 
     public function table(Table $table): Table
     {

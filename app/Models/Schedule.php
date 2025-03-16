@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Schedule extends Model
 {
@@ -20,7 +21,8 @@ class Schedule extends Model
     ];
 
     protected $casts = [
-        'recurrence_freq' => 'string', // Garante que o Laravel sempre envie uma string
+        'scheduled_at' => 'datetime',
+        'is_recurring' => 'boolean',
     ];
 
     public function professor()
@@ -32,27 +34,42 @@ class Schedule extends Model
     {
         return $this->belongsTo(Student::class);
     }
-    public function expandRecurrence()
+
+    protected static function boot()
     {
-        if ($this->is_recurring && $this->recurrence_frequency) {
-            $nextDate = $this->scheduled_at;
+        parent::boot();
 
-            for ($i = 0; $i < 5; $i++) { // Exemplo: criar 5 instâncias de agendamentos
-                if ($this->recurrence_frequency === 'daily') {
-                    $nextDate->addDay();
-                } elseif ($this->recurrence_frequency === 'weekly') {
-                    $nextDate->addWeek();
-                } elseif ($this->recurrence_frequency === 'monthly') {
-                    $nextDate->addMonth();
-                }
+        static::created(function ($schedule) {
+            if ($schedule->is_recurring && $schedule->recurrence_frequency) {
+                $schedule->createRecurringSchedules();
+            }
+        });
+    }
 
-                Schedule::create([
+    public function createRecurringSchedules()
+    {
+        $startDate = Carbon::parse($this->scheduled_at);
+        $endDate = $startDate->copy()->addMonths(6); // Criar recorrências para os próximos 6 meses
+        $nextDate = $startDate->copy();
+
+        while ($nextDate->lessThanOrEqualTo($endDate)) {
+            $nextDate = match ($this->recurrence_frequency) {
+                'daily' => $nextDate->copy()->addDay(),
+                'weekly' => $nextDate->copy()->addWeek(), // Mantém o mesmo dia da semana
+                'monthly' => $nextDate->copy()->addMonthNoOverflow()->next($startDate->dayOfWeek), // Garante que o dia da semana permaneça igual
+                default => null,
+            };
+
+            if ($nextDate && $nextDate->lessThanOrEqualTo($endDate)) {
+                Schedule::firstOrCreate([
                     'professor_id' => $this->professor_id,
                     'student_id' => $this->student_id,
                     'scheduled_at' => $nextDate,
-                    'is_recurring' => false, // Instâncias não são recorrentes
+                    'is_recurring' => false, // As instâncias geradas não são editáveis como recorrentes
+                    'recurrence_frequency' => null,
                 ]);
             }
         }
     }
 }
+    

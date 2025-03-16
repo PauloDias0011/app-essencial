@@ -11,6 +11,8 @@ use App\Models\Grade;
 
 class DashboardWidgets extends BaseWidget
 {
+    protected static ?int $sort = 1;
+
     protected function getCards(): array
     {
         return [
