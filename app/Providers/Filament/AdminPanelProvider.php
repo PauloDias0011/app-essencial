@@ -4,7 +4,9 @@ namespace App\Providers\Filament;
 
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
 use App\Filament\Widgets\DashboardWidgets as WidgetsDashboardWidgets;
+use App\Filament\Widgets\MyCalendarWidget;
 use App\Filament\Widgets\RecentClassPlansTable as WidgetsRecentClassPlansTable;
+use App\Filament\Widgets\SchedulesCalendar;
 use App\Filament\Widgets\UpcomingSchedulesCalendar as WidgetsUpcomingSchedulesCalendar;
 use DashboardWidgets;
 use Filament\Http\Middleware\Authenticate;
@@ -56,7 +58,9 @@ class AdminPanelProvider extends PanelProvider
                 WidgetsRecentClassPlansTable::class,
                 WidgetsUpcomingSchedulesCalendar::class,
                 MonthlyExpensesChart::class,
-            ])
+                SchedulesCalendar::class,   
+                MyCalendarWidget::class,
+                ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

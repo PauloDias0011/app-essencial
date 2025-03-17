@@ -24,6 +24,7 @@ use Filament\Infolists\Components\TableEntry;
 use Filament\Infolists\Infolist;
 use App\Models\ClassPlan;
 use Filament\Infolists\Components\Split;
+use Filament\Tables\Actions\BulkAction;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleResource extends Resource
@@ -69,50 +70,73 @@ class ScheduleResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('professor.name')->label('👨‍🏫 Professor')->sortable(),
-                TextColumn::make('student.name')->label('🎓 Aluno')->sortable(),
-                TextColumn::make('scheduled_at')
-                    ->label('📅 Data e Hora')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('recurrence_frequency')
-                    ->label('⏳ Frequência')
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'daily' => 'Diariamente',
-                        'weekly' => 'Semanalmente',
-                        'monthly' => 'Mensalmente',
-                        default => 'N/A',
-                    }),
-            ])
-            ->actions([
-                ViewAction::make()
-                    ->label('Visualizar')
-                    ->icon('heroicon-o-eye')
-                    ->tooltip('Ver detalhes do agendamento')
-                    ->color('blue'),
-                EditAction::make()
-                    ->label('Editar')
-                    ->icon('heroicon-o-pencil')
-                    ->tooltip('Editar este agendamento')
-                    ->color('yellow'),
-                DeleteAction::make()
-                    ->label('Deletar')  
-                    ->icon('heroicon-o-trash')
-                    ->tooltip('Remover este agendamento')
-                    ->color('red'),
-            ])
-            ->filters([
-                SelectFilter::make('professor_id')
-                    ->label('👨‍🏫 Professor')
-                    ->relationship('professor', 'name'),
-                SelectFilter::make('student_id')
-                    ->label('🎓 Aluno')
-                    ->relationship('student', 'name'),
-            ], layout: FiltersLayout::AboveContent);
-    }
+{
+    return $table
+        ->modifyQueryUsing(function ($query) {
+            $user = Auth::user();
+
+            if ($user->hasRole('Professor')) {
+                // 🔹 Filtra apenas os agendamentos do próprio professor
+                $query->where('professor_id', $user->id);
+            } elseif ($user->hasRole('Pai/Responsavel')) {
+                // 🔹 Filtra apenas os agendamentos dos filhos do responsável
+                $query->whereHas('student', function ($q) use ($user) {
+                    $q->where('parent_id', $user->id);
+                });
+            }
+        })
+        ->columns([
+            TextColumn::make('professor.name')->label('👨‍🏫 Professor')->sortable(),
+            TextColumn::make('student.name')->label('🎓 Aluno')->sortable(),
+            TextColumn::make('scheduled_at')
+                ->label('📅 Data e Hora')
+                ->dateTime()
+                ->sortable(),
+            TextColumn::make('recurrence_frequency')
+                ->label('⏳ Frequência')
+                ->formatStateUsing(fn($state) => match ($state) {
+                    'daily' => 'Diariamente',
+                    'weekly' => 'Semanalmente',
+                    'monthly' => 'Mensalmente',
+                    default => 'N/A',
+                }),
+        ])
+        ->bulkActions([
+            BulkAction::make('delete')
+            ->label('Excluir Selecionados')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->action(fn ($records) => $records->each->delete())
+        ])
+        ->actions([
+            ViewAction::make()
+                ->label('Visualizar')
+                ->icon('heroicon-o-eye')
+                ->tooltip('Ver detalhes do agendamento')
+                ->color('blue'),
+            EditAction::make()
+                ->label('Editar')
+                ->icon('heroicon-o-pencil')
+                ->tooltip('Editar este agendamento')
+                ->color('yellow'),
+            DeleteAction::make()
+                ->label('Deletar')  
+                ->icon('heroicon-o-trash')
+                ->tooltip('Remover este agendamento')
+                ->color('red'),
+        ])
+        ->filters([
+            SelectFilter::make('professor_id')
+                ->label('👨‍🏫 Professor')
+                ->relationship('professor', 'name')
+                ->visible(fn () => Auth::user()->hasRole('Super Admin')), // 🔹 Só Admin pode filtrar professores
+
+            SelectFilter::make('student_id')
+                ->label('🎓 Aluno')
+                ->relationship('student', 'name'),
+        ], layout: FiltersLayout::AboveContent);
+}
 
      public static function infolist(Infolist $infolist): Infolist
     {

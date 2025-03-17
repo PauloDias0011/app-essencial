@@ -49,27 +49,29 @@ class Schedule extends Model
     public function createRecurringSchedules()
     {
         $startDate = Carbon::parse($this->scheduled_at);
-        $endDate = $startDate->copy()->addMonths(6); // Criar recorrências para os próximos 6 meses
+        $endDate = $startDate->copy()->addMonths(3); // Criar recorrências para os próximos 3 meses
         $nextDate = $startDate->copy();
-
+    
         while ($nextDate->lessThanOrEqualTo($endDate)) {
             $nextDate = match ($this->recurrence_frequency) {
                 'daily' => $nextDate->copy()->addDay(),
-                'weekly' => $nextDate->copy()->addWeek(), // Mantém o mesmo dia da semana
-                'monthly' => $nextDate->copy()->addMonthNoOverflow()->next($startDate->dayOfWeek), // Garante que o dia da semana permaneça igual
+                'weekly' => $nextDate->copy()->addWeek(),
+                'monthly' => $nextDate->copy()->addMonthNoOverflow(),
                 default => null,
             };
-
+    
             if ($nextDate && $nextDate->lessThanOrEqualTo($endDate)) {
                 Schedule::firstOrCreate([
                     'professor_id' => $this->professor_id,
                     'student_id' => $this->student_id,
                     'scheduled_at' => $nextDate,
-                    'is_recurring' => false, // As instâncias geradas não são editáveis como recorrentes
+                    'is_recurring' => false, // Evita loops infinitos
                     'recurrence_frequency' => null,
                 ]);
             }
         }
     }
+    
+    
 }
     
