@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Althinect\FilamentSpatieRolesPermissions\Commands\Permission;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -13,24 +14,26 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
+    public function run()
     {
-        // User::factory(10)->create();
+        // Cria o papel de Super Admin caso não exista
+        $role = Role::firstOrCreate(['name' => 'super-admin']);
 
-        $user = User::firstOrCreate([
-            'email' => 'pauloricardo.silvadias@gmail.com',
-        ], [
-            'name' => 'Super Admin',
-            'password' => Hash::make('m20b30a0'),
-        ]);
+        // Cria o usuário Super Admin
+        $user = User::firstOrCreate(
+            ['email' => 'pauloricardo.silvadias@gmail.com'],
+            [
+                'name' => 'Super Admin',
+                'email' => 'pauloricardo.silvadias@gmail.com',
+                'password' => Hash::make('password123'), // Troque pela senha desejada
+            ]
+        );
 
-        // Criar papel Super Admin se não existir
-        $role = Role::firstOrCreate(['name' => 'Super Admin']);
-
-        // Atribuir papel ao usuário
+        // Atribui o papel de Super Admin ao usuário
         $user->assignRole($role);
 
-        echo "✅ Super Admin criado com sucesso!\n";
-    
+        // Caso você queira adicionar permissões ao super admin
+        $permissions = Permission::all();
+        $role->syncPermissions($permissions);
     }
 }
