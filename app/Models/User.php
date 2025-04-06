@@ -53,7 +53,13 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
 
-        return str_ends_with($this->email, '@espacodigitall.com.br') && $this->hasVerifiedEmail();
+         // Permite acesso total para super admin
+         if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        // Permite acesso se o e-mail foi verificado, independente do domínio
+        return $this->hasVerifiedEmail();
     }
 
     public function children()
