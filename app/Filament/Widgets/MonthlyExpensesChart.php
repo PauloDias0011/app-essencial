@@ -10,7 +10,7 @@ class MonthlyExpensesChart extends BarChartWidget
 
     protected function getData(): array
     {
-        $expenses = Expense::selectRaw("DATE_TRUNC('month', date_expense) as month, SUM(total_cost) as total")
+        $expenses = Expense::selectRaw("DATE_FORMAT(date_expense, '%Y-%m') as month, SUM(total_cost) as total")
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('total', 'month')
@@ -19,7 +19,10 @@ class MonthlyExpensesChart extends BarChartWidget
         return [
             'labels' => array_keys($expenses),
             'datasets' => [
-                ['label' => 'Total Gasto', 'data' => array_values($expenses)],
+                [
+                    'label' => 'Total Gasto',
+                    'data' => array_values($expenses),
+                ],
             ],
         ];
     }
