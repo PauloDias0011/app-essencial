@@ -8,6 +8,7 @@ use App\Filament\Widgets\MyCalendarWidget;
 use App\Filament\Widgets\RecentClassPlansTable as WidgetsRecentClassPlansTable;
 use App\Filament\Widgets\SchedulesCalendar;
 use App\Filament\Widgets\UpcomingSchedulesCalendar as WidgetsUpcomingSchedulesCalendar;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,6 +26,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use MonthlyExpensesChart;
 use StudentDistributionChart;
+use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
+use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -38,6 +41,11 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandName('Apoio Pedagogico Essencial')
+            ->favicon('images/logo.png')
+            ->colors([
+                'primary' => '#BC3C3F',
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -45,7 +53,16 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('360s')
-            ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
+            ->plugins([
+               
+            FilamentBackgroundsPlugin::make()
+                ->imageProvider(
+                        MyImages::make()
+                            ->directory('images/myImages')
+                    ),
+                FilamentSpatieRolesPermissionsPlugin::make()
+                 
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 WidgetsDashboardWidgets::class,
