@@ -27,7 +27,7 @@ class Student extends Model
         return $this->belongsTo(User::class, 'parent_id');
     }
 
-    public function professor()
+     public function professor()
     {
         return $this->belongsTo(User::class, 'professor_id');
     }
@@ -40,11 +40,6 @@ class Student extends Model
     public function grades()
     {
         return $this->hasMany(Grade::class);
-    }
-
-    public function announcements()
-    {
-        return $this->hasMany(Announcement::class);
     }
 
     public function schedules()
