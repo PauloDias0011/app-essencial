@@ -30,7 +30,7 @@ class StudentResource extends Resource
     protected static ?string $navigationLabel = 'Alunos';
     protected static ?string $label = 'Aluno';
     protected static ?string $pluralLabel = 'Alunos';
-    
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -61,7 +61,11 @@ class StudentResource extends Resource
                             ->label('🏫 Escola'),
                         Select::make('professor_id')
                             ->label('👨‍🏫 Professor')
-                            ->relationship('professor', 'name')
+                            ->relationship(
+                                name: 'professor',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn($query) => $query->role('Professor')
+                            )
                             ->required(),
                     ]),
                 Wizard\Step::make('🏡 Informações Adicionais')
@@ -112,13 +116,13 @@ class StudentResource extends Resource
                 ->schema([
                     TextEntry::make('grades_summary')
                         ->label('📚 Notas por Disciplina')
-                        ->formatStateUsing(fn ($record) => $record->grades->groupBy('semester')->map(fn ($semester) => $semester->map(fn ($grade) => "{$grade->subject}: {$grade->grade}")->join(', '))->join(' | ')),
+                        ->formatStateUsing(fn($record) => $record->grades->groupBy('semester')->map(fn($semester) => $semester->map(fn($grade) => "{$grade->subject}: {$grade->grade}")->join(', '))->join(' | ')),
                 ]),
             Section::make('📄 Planos de Aula')
                 ->schema([
                     TextEntry::make('classPlans_summary')
                         ->label('📄 Planos de Aula')
-                        ->formatStateUsing(fn ($record) => $record->classPlans->map(fn ($plan) => "{$plan->professor->name} ({$plan->created_at->format('d/m/Y')})")->join(', ')),
+                        ->formatStateUsing(fn($record) => $record->classPlans->map(fn($plan) => "{$plan->professor->name} ({$plan->created_at->format('d/m/Y')})")->join(', ')),
                 ]),
         ]);
     }
