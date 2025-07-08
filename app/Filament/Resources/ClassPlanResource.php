@@ -32,7 +32,7 @@ class ClassPlanResource extends Resource
     protected static ?string $navigationLabel = 'Planos de Aula';
     protected static ?string $label = 'Plano de Aula';
     protected static ?string $pluralLabel = 'Planos de Aula';
-    
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -41,7 +41,11 @@ class ClassPlanResource extends Resource
                     ->schema([
                         Select::make('professor_id')
                             ->label('👨‍🏫 Professor')
-                            ->relationship('professor', 'name')
+                            ->relationship(
+                                name: 'professor',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn($query) => $query->role('Professor')
+                            )
                             ->required(),
                         Select::make('student_id')
                             ->label('🎓 Aluno')
@@ -69,12 +73,12 @@ class ClassPlanResource extends Resource
                 TextColumn::make('created_at')
                     ->label('🗓️ Criado em')
                     ->dateTime()
-                    ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('d/m/Y'))
+                    ->formatStateUsing(fn($state) => Carbon::parse($state)->format('d/m/Y'))
                     ->sortable(),
                 BadgeColumn::make('created_at_relative')
                     ->label('⏳ Há quanto tempo')
-                    ->getStateUsing(fn ($record) => Carbon::parse($record->created_at)->diffForHumans())
-                    ->color(fn ($state) => match (true) {
+                    ->getStateUsing(fn($record) => Carbon::parse($record->created_at)->diffForHumans())
+                    ->color(fn($state) => match (true) {
                         str_contains($state, 'segundo') => 'gray',
                         str_contains($state, 'minuto') => 'gray',
                         str_contains($state, 'hora') => 'gray',
@@ -96,7 +100,7 @@ class ClassPlanResource extends Resource
                     ->tooltip('Editar este plano de aula')
                     ->color('yellow'),
                 DeleteAction::make()
-                    ->label('Deletar')  
+                    ->label('Deletar')
                     ->icon('heroicon-o-trash')
                     ->tooltip('Remover este plano de aula')
                     ->color('red'),
@@ -113,13 +117,13 @@ class ClassPlanResource extends Resource
                     ->form([
                         DatePicker::make('created_from')
                     ])
-                    ->query(fn ($query, $data) => $query->when($data['created_from'], fn ($query) => $query->whereDate('created_at', '>=', Carbon::parse($data['created_from'])))),
+                    ->query(fn($query, $data) => $query->when($data['created_from'], fn($query) => $query->whereDate('created_at', '>=', Carbon::parse($data['created_from'])))),
                 Filter::make('created_to')
                     ->label('Criado até')
                     ->form([
                         DatePicker::make('created_to')
                     ])
-                    ->query(fn ($query, $data) => $query->when($data['created_to'], fn ($query) => $query->whereDate('created_at', '<=', Carbon::parse($data['created_to'])))),
+                    ->query(fn($query, $data) => $query->when($data['created_to'], fn($query) => $query->whereDate('created_at', '<=', Carbon::parse($data['created_to'])))),
             ], layout: FiltersLayout::AboveContent);
     }
 
@@ -134,7 +138,7 @@ class ClassPlanResource extends Resource
                 ]),
             Section::make('📂 Arquivo')
                 ->schema([
-                    TextEntry::make('file_path')->label('📄 Documento')->url(fn ($record) => asset('storage/' . $record->file_path), true),
+                    TextEntry::make('file_path')->label('📄 Documento')->url(fn($record) => asset('storage/' . $record->file_path), true),
                 ]),
         ]);
     }

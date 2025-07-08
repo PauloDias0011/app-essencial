@@ -72,7 +72,11 @@ class StudentResource extends Resource
                     ->schema([
                         Select::make('parent_id')
                             ->label('👨‍👩‍👧‍👦 Pai/Responsável')
-                            ->relationship('parent', 'name')
+                            ->relationship(
+                                name: 'professor',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn($query) => $query->role('Pai/Responsavel')
+                            )
                             ->required(),
                         Textarea::make('address')
                             ->label('📍 Endereço')
