@@ -115,6 +115,8 @@ class StudentResource extends Resource
                     TextEntry::make('school')->label('🏫 Escola'),
                     TextEntry::make('parent.name')->label('👨‍👩‍👧‍👦 Pai/Responsável'),
                     TextEntry::make('professor.name')->label('👨‍🏫 Professor'),
+                    TextEntry::make('address')->label('🏠 Endereço'),
+
                 ]),
             Section::make('📖 Boletim Escolar')
                 ->schema([

@@ -166,6 +166,8 @@ class ScheduleResource extends Resource
                         TextEntry::make('student.email')->label('Email'),
                         TextEntry::make('student.phone')->label('Telefone')->default('Não informado'),
                         TextEntry::make('student.grade_year')->label('Série/Ano')->default('Não informado'),
+                        TextEntry::make('student.address')->label('🏠 Endereço'),
+
                     ]),
           
         ]);
