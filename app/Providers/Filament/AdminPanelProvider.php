@@ -67,7 +67,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 WidgetsDashboardWidgets::class,
                 StudentDistributionChart::class,
-                GradeTrendChart::class,
                 WidgetsRecentClassPlansTable::class,
                 WidgetsUpcomingSchedulesCalendar::class,
                 MonthlyExpensesChart::class,
