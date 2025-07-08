@@ -3,7 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentResource\Pages;
+use App\Filament\Resources\StudentResource\RelationManagers\ClassPlansRelationManager;
 use App\Filament\Resources\StudentResource\RelationManagers\GradesRelationManager;
+use App\Models\ClassPlan;
 use App\Models\Student;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\TextInput;
@@ -139,48 +141,6 @@ class StudentResource extends Resource
                 TextEntry::make('address')->label('📍 Endereço'),
             ])
             ->columns(2),
-
-        
-        
-        Section::make('📄 Planos de Aula')
-            ->schema([
-                TextEntry::make('classPlans_summary')
-                    ->label('📄 Lista de Planos')
-                    ->formatStateUsing(function ($record) {
-                        try {
-                            if (!$record->classPlans || $record->classPlans->isEmpty()) {
-                                return '📭 Nenhum plano de aula cadastrado.';
-                            }
-
-                            return $record->classPlans
-                                ->map(function($plan) {
-                                    return "👨‍🏫 <strong>{$plan->professor->name}</strong> - " . 
-                                           $plan->created_at->format('d/m/Y H:i');
-                                })
-                                ->join('<br>');
-                        } catch (\Exception $e) {
-                            return "❌ Erro ao carregar planos: " . $e->getMessage();
-                        }
-                    })
-                    ->html(),
-
-                TextEntry::make('total_class_plans')
-                    ->label('📊 Total de Planos')
-                    ->formatStateUsing(function ($record) {
-                        try {
-                            $count = $record->classPlans ? $record->classPlans->count() : 0;
-                            return $count > 0 ? "{$count} planos cadastrados" : 'Nenhum plano cadastrado';
-                        } catch (\Exception $e) {
-                            return 'Erro ao contar planos';
-                        }
-                    }),
-            ])
-            ->collapsible(),
-
-        
-           
-
-        
     ]);
 }
 
@@ -188,6 +148,7 @@ class StudentResource extends Resource
     {
         return [
             GradesRelationManager::class,
+            ClassPlansRelationManager::class,
         ];
     }
 
