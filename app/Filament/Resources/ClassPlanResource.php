@@ -92,18 +92,15 @@ class ClassPlanResource extends Resource
                 ViewAction::make()
                     ->label('Visualizar')
                     ->icon('heroicon-o-eye')
-                    ->tooltip('Ver detalhes do plano de aula')
-                    ->color('blue'),
+                    ->tooltip('Ver detalhes do plano de aula'),
                 EditAction::make()
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->tooltip('Editar este plano de aula')
-                    ->color('yellow'),
+                    ->tooltip('Editar este plano de aula'),
                 DeleteAction::make()
                     ->label('Deletar')
                     ->icon('heroicon-o-trash')
                     ->tooltip('Remover este plano de aula')
-                    ->color('red'),
             ])
             ->filters([
                 SelectFilter::make('professor_id')
@@ -124,7 +121,9 @@ class ClassPlanResource extends Resource
                         DatePicker::make('created_to')
                     ])
                     ->query(fn($query, $data) => $query->when($data['created_to'], fn($query) => $query->whereDate('created_at', '<=', Carbon::parse($data['created_to'])))),
-            ], layout: FiltersLayout::AboveContent);
+            ], layout: FiltersLayout::AboveContent) ->emptyStateHeading('📭 Nenhum plano de aula encontrado')
+            ->emptyStateDescription('Ainda não existem planos de aula cadastrados.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
     }
 
     public static function infolist(Infolist $infolist): Infolist

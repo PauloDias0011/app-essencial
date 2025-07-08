@@ -30,11 +30,11 @@ class GradeResource extends Resource
     protected static ?string $label = 'Nota';
     protected static ?string $pluralLabel = 'Notas';
     
-    public static function form(Form $form): Form
+    public static function form(Form $form): Form   
     {
         return $form->schema([
             Wizard::make([
-                Wizard\Step::make('Detalhes da Nota')
+                Wizard\Step::make('📝 Detalhes da Nota')
                     ->schema([
                         Select::make('professor_id')
                             ->label('👨‍🏫 Professor')
@@ -42,26 +42,55 @@ class GradeResource extends Resource
                             ->default(Auth::user()->hasRole('Professor') ? Auth::id() : null)
                             ->disabled(Auth::user()->hasRole('Professor'))
                             ->required(),
+
                         Select::make('student_id')
                             ->label('🎓 Aluno')
                             ->relationship('student', 'name')
+                            ->searchable()
+                            ->preload()
                             ->required(),
+
                         TextInput::make('subject')
                             ->label('📖 Disciplina')
-                            ->required(),
+                            ->placeholder('Ex: Matemática, Português, História')
+                            ->required()
+                            ->maxLength(100),
+
                         TextInput::make('grade')
                             ->label('📊 Nota')
                             ->numeric()
+                            ->minValue(0)
+                            ->maxValue(10)
+                            ->step(0.1)
+                            ->placeholder('0.0 a 10.0')
                             ->required(),
-                        Select::make('semester')
-                            ->label('📆 Semestre')
+
+                        // ✅ Campo MÊS ao invés de semestre
+                        Select::make('month')
+                            ->label('📅 Mês')
                             ->options([
-                                '1' => '1º Semestre',
-                                '2' => '2º Semestre',
+                                1 => 'Janeiro',
+                                2 => 'Fevereiro',
+                                3 => 'Março',
+                                4 => 'Abril',
+                                5 => 'Maio',
+                                6 => 'Junho',
+                                7 => 'Julho',
+                                8 => 'Agosto',
+                                9 => 'Setembro',
+                                10 => 'Outubro',
+                                11 => 'Novembro',
+                                12 => 'Dezembro',
                             ])
+                            ->default(now()->month) // ✅ Mês atual como padrão
                             ->required(),
+
                         TextInput::make('year')
                             ->label('📅 Ano Letivo')
+                            ->numeric()
+                            ->minValue(2020)
+                            ->maxValue(2030)
+                            ->default(now()->year) // ✅ Ano atual como padrão
                             ->required(),
                     ]),
             ])->columnSpanFull()
@@ -72,44 +101,114 @@ class GradeResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function ($query) {
+                // ✅ Professores só veem suas próprias notas
                 if (Auth::user()->hasRole('Professor')) {
                     $query->where('professor_id', Auth::id());
                 }
+                
+                // ✅ Ordenar por ano e mês mais recentes
+                $query->orderBy('year', 'desc')->orderBy('month', 'desc');
             })
             ->columns([
-                TextColumn::make('subject')->label('📖 Disciplina')->sortable(),
-                TextColumn::make('grade')->label('📊 Nota')->sortable(),
-                TextColumn::make('semester')->label('📆 Semestre')->sortable(),
-                TextColumn::make('year')->label('📅 Ano Letivo')->sortable(),
+                TextColumn::make('student.name')
+                    ->label('🎓 Aluno')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('subject')
+                    ->label('📖 Disciplina')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('grade')
+                    ->label('📊 Nota')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state >= 8 => 'success',
+                        $state >= 6 => 'warning', 
+                        default => 'danger',
+                    }),
+
+                TextColumn::make('month')
+                    ->label('📅 Mês')
+                    ->formatStateUsing(fn (int $state): string => [
+                        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+                        4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+                        7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+                        10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
+                    ][$state] ?? '')
+                    ->sortable(),
+
+                TextColumn::make('year')
+                    ->label('📅 Ano')
+                    ->sortable(),
+
+                TextColumn::make('professor.name')
+                    ->label('👨‍🏫 Professor')
+                    ->toggleable(isToggledHiddenByDefault: Auth::user()->hasRole('Professor')),
             ])
             ->actions([
                 ViewAction::make()
                     ->label('Visualizar')
                     ->icon('heroicon-o-eye')
-                    ->tooltip('Ver detalhes da nota')
-                    ->color('blue'),
+                    ->tooltip('Ver detalhes da nota'),
+
                 EditAction::make()
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->tooltip('Editar esta nota')
-                    ->color('yellow'),
+                    ->tooltip('Editar esta nota'),
+
                 DeleteAction::make()
                     ->label('Deletar')  
                     ->icon('heroicon-o-trash')
                     ->tooltip('Remover esta nota')
-                    ->color('red'),
             ])
             ->filters([
                 SelectFilter::make('professor_id')
                     ->label('👨‍🏫 Professor')
-                    ->options(User::role('Professor')->pluck('name', 'id')),
-                SelectFilter::make('semester')
-                    ->label('📆 Semestre')
+                    ->options(User::role('Professor')->pluck('name', 'id'))
+                    ->visible(fn () => !Auth::user()->hasRole('Professor')), // ✅ Só Admin vê este filtro
+
+                SelectFilter::make('student_id')
+                    ->label('🎓 Aluno')
+                    ->relationship('student', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('subject')
+                    ->label('📖 Disciplina')
+                    ->options(function () {
+                        return Grade::distinct()
+                            ->pluck('subject', 'subject')
+                            ->filter()
+                            ->toArray();
+                    }),
+
+                // ✅ Filtro por MÊS
+                SelectFilter::make('month')
+                    ->label('📅 Mês')
                     ->options([
-                        '1' => '1º Semestre',
-                        '2' => '2º Semestre',
+                        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+                        4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+                        7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+                        10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
                     ]),
-            ], layout: FiltersLayout::AboveContent);
+
+                SelectFilter::make('year')
+                    ->label('📅 Ano')
+                    ->options(function () {
+                        return Grade::distinct()
+                            ->pluck('year', 'year')
+                            ->sort()
+                            ->toArray();
+                    }),
+
+            ], layout: FiltersLayout::AboveContent)
+            ->defaultSort('created_at', 'desc')
+            ->emptyStateHeading('📭 Nenhuma nota encontrada')
+            ->emptyStateDescription('Ainda não existem notas cadastradas.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -117,13 +216,42 @@ class GradeResource extends Resource
         return $infolist->schema([
             Section::make('📌 Informações da Nota')
                 ->schema([
-                    TextEntry::make('professor.name')->label('👨‍🏫 Professor'),
-                    TextEntry::make('student.name')->label('🎓 Aluno'),
-                    TextEntry::make('subject')->label('📖 Disciplina'),
-                    TextEntry::make('grade')->label('📊 Nota'),
-                    TextEntry::make('semester')->label('📆 Semestre'),
-                    TextEntry::make('year')->label('📅 Ano Letivo'),
-                ]),
+                    TextEntry::make('professor.name')
+                        ->label('👨‍🏫 Professor'),
+
+                    TextEntry::make('student.name')
+                        ->label('🎓 Aluno'),
+
+                    TextEntry::make('subject')
+                        ->label('📖 Disciplina'),
+
+                    TextEntry::make('grade')
+                        ->label('📊 Nota')
+                        ->badge()
+                        ->color(fn (string $state): string => match (true) {
+                            $state >= 8 => 'success',
+                            $state >= 6 => 'warning',
+                            default => 'danger',
+                        }),
+
+                    // ✅ Exibir mês em português
+                    TextEntry::make('month')
+                        ->label('📅 Mês')
+                        ->formatStateUsing(fn (int $state): string => [
+                            1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+                            4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+                            7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+                            10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
+                        ][$state] ?? ''),
+
+                    TextEntry::make('year')
+                        ->label('📅 Ano Letivo'),
+
+                    TextEntry::make('created_at')
+                        ->label('📅 Criado em')
+                        ->dateTime('d/m/Y H:i'),
+                ])
+                ->columns(2),
         ]);
     }
 

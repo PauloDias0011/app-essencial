@@ -113,18 +113,15 @@ class ScheduleResource extends Resource
             ViewAction::make()
                 ->label('Visualizar')
                 ->icon('heroicon-o-eye')
-                ->tooltip('Ver detalhes do agendamento')
-                ->color('blue'),
+                ->tooltip('Ver detalhes do agendamento'),
             EditAction::make()
                 ->label('Editar')
                 ->icon('heroicon-o-pencil')
-                ->tooltip('Editar este agendamento')
-                ->color('yellow'),
+                ->tooltip('Editar este agendamento'),
             DeleteAction::make()
                 ->label('Deletar')  
                 ->icon('heroicon-o-trash')
                 ->tooltip('Remover este agendamento')
-                ->color('red'),
         ])
         ->filters([
             SelectFilter::make('professor_id')
@@ -135,7 +132,10 @@ class ScheduleResource extends Resource
             SelectFilter::make('student_id')
                 ->label('🎓 Aluno')
                 ->relationship('student', 'name'),
-        ], layout: FiltersLayout::AboveContent);
+        ], layout: FiltersLayout::AboveContent)
+         ->emptyStateHeading('📭 Nenhum agendamento encontrado')
+            ->emptyStateDescription('Ainda não existem agendamentos cadastrados.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
 }
 
      public static function infolist(Infolist $infolist): Infolist

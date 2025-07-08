@@ -13,15 +13,15 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 
 class StudentResource extends Resource
 {
@@ -97,41 +97,92 @@ class StudentResource extends Resource
                 TextColumn::make('grade_year')->label('📖 Série/Ano')->sortable(),
                 TextColumn::make('parent.name')->label('👨‍👩‍👧‍👦 Pai/Responsável'),
                 TextColumn::make('professor.name')->label('👨‍🏫 Professor')->sortable(),
+            ])   ->actions([
+                ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->tooltip('Ver detalhes da nota')
+                    ->color('info'),
+
+                EditAction::make()
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil')
+                    ->tooltip('Editar esta nota')
+                    ->color('warning'),
+
+                DeleteAction::make()
+                    ->label('Deletar')  
+                    ->icon('heroicon-o-trash')
+                    ->tooltip('Remover esta nota')
+                    ->color('danger'),
             ])
             ->filters([
                 SelectFilter::make('professor_id')
                     ->label('👨‍🏫 Professor')
                     ->relationship('professor', 'name'),
-            ], layout: FiltersLayout::AboveContent);
+            ], layout: FiltersLayout::AboveContent)
+             ->emptyStateHeading('📭 Nenhum aluno(a) encontrado')
+            ->emptyStateDescription('Ainda não existem alunos(a) cadastrados.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
     }
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist->schema([
-            Section::make('📌 Informações do Aluno')
-                ->schema([
-                    TextEntry::make('name')->label('👤 Nome'),
-                    TextEntry::make('date_of_birth')->label('📅 Data de Nascimento')->dateTime('d/m/Y'),
-                    TextEntry::make('grade_year')->label('📖 Série/Ano'),
-                    TextEntry::make('school')->label('🏫 Escola'),
-                    TextEntry::make('parent.name')->label('👨‍👩‍👧‍👦 Pai/Responsável'),
-                    TextEntry::make('professor.name')->label('👨‍🏫 Professor'),
-                    TextEntry::make('address')->label('🏠 Endereço'),
+   public static function infolist(Infolist $infolist): Infolist
+{
+    return $infolist->schema([
+        Section::make('📌 Informações do Aluno')
+            ->schema([
+                TextEntry::make('name')->label('👤 Nome'),
+                TextEntry::make('date_of_birth')->label('📅 Data de Nascimento')->dateTime('d/m/Y'),
+                TextEntry::make('grade_year')->label('📖 Série/Ano'),
+                TextEntry::make('school')->label('🏫 Escola'),
+                TextEntry::make('parent.name')->label('👨‍👩‍👧‍👦 Pai/Responsável'),
+                TextEntry::make('professor.name')->label('👨‍🏫 Professor'),
+                TextEntry::make('address')->label('📍 Endereço'),
+            ])
+            ->columns(2),
 
-                ]),
-            Section::make('📖 Boletim Escolar')
-                ->schema([
-                    TextEntry::make('grades_summary')
-                        ->label('📚 Notas por Disciplina')
-                        ->formatStateUsing(fn($record) => $record->grades->groupBy('semester')->map(fn($semester) => $semester->map(fn($grade) => "{$grade->subject}: {$grade->grade}")->join(', '))->join(' | ')),
-                ]),
-            Section::make('📄 Planos de Aula')
-                ->schema([
-                    TextEntry::make('classPlans_summary')
-                        ->label('📄 Planos de Aula')
-                        ->formatStateUsing(fn($record) => $record->classPlans->map(fn($plan) => "{$plan->professor->name} ({$plan->created_at->format('d/m/Y')})")->join(', ')),
-                ]),
-        ]);
-    }
+        
+        
+        Section::make('📄 Planos de Aula')
+            ->schema([
+                TextEntry::make('classPlans_summary')
+                    ->label('📄 Lista de Planos')
+                    ->formatStateUsing(function ($record) {
+                        try {
+                            if (!$record->classPlans || $record->classPlans->isEmpty()) {
+                                return '📭 Nenhum plano de aula cadastrado.';
+                            }
+
+                            return $record->classPlans
+                                ->map(function($plan) {
+                                    return "👨‍🏫 <strong>{$plan->professor->name}</strong> - " . 
+                                           $plan->created_at->format('d/m/Y H:i');
+                                })
+                                ->join('<br>');
+                        } catch (\Exception $e) {
+                            return "❌ Erro ao carregar planos: " . $e->getMessage();
+                        }
+                    })
+                    ->html(),
+
+                TextEntry::make('total_class_plans')
+                    ->label('📊 Total de Planos')
+                    ->formatStateUsing(function ($record) {
+                        try {
+                            $count = $record->classPlans ? $record->classPlans->count() : 0;
+                            return $count > 0 ? "{$count} planos cadastrados" : 'Nenhum plano cadastrado';
+                        } catch (\Exception $e) {
+                            return 'Erro ao contar planos';
+                        }
+                    }),
+            ])
+            ->collapsible(),
+
+        
+           
+
+        
+    ]);
+}
 
     public static function getRelations(): array
     {

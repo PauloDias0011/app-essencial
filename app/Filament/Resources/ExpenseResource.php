@@ -93,18 +93,15 @@ class ExpenseResource extends Resource
                 ViewAction::make()
                     ->label('Visualizar')
                     ->icon('heroicon-o-eye')
-                    ->tooltip('Ver detalhes da despesa')
-                    ->color('blue'),
+                    ->tooltip('Ver detalhes da despesa'),
                 EditAction::make()
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->tooltip('Editar esta despesa')
-                    ->color('yellow'),
+                    ->tooltip('Editar esta despesa'),
                 DeleteAction::make()
                     ->label('Deletar')  
                     ->icon('heroicon-o-trash')
                     ->tooltip('Remover esta despesa')
-                    ->color('red'),
             ])
             ->filters([
                 SelectFilter::make('professor_id')
@@ -122,7 +119,9 @@ class ExpenseResource extends Resource
                         DatePicker::make('date_to')
                     ])
                     ->query(fn ($query, $data) => $query->when($data['date_to'], fn ($query) => $query->whereDate('date_expense', '<=', Carbon::parse($data['date_to'])))),
-            ], layout: FiltersLayout::AboveContent);
+            ], layout: FiltersLayout::AboveContent)->emptyStateHeading('📭 Nenhuma despesa  encontrada')
+            ->emptyStateDescription('Ainda não existem despesas cadastradas.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
     }
 
     private static function getDateBadgeColor($date)
