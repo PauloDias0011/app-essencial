@@ -28,7 +28,7 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Usuários';
     protected static ?string $label = 'Usuário';
     protected static ?string $pluralLabel = 'Usuários';
-    
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -43,7 +43,11 @@ class UserResource extends Resource
                             ->label('📧 E-mail')
                             ->email()
                             ->required()
-                            ->unique(),
+                            ->unique(
+                                table: 'users',
+                                column: 'email',
+                                ignoreRecord: true // ✅ Esta linha resolve!
+                            ),
                         TextInput::make('password')
                             ->label('🔑 Senha')
                             ->password()
@@ -94,7 +98,7 @@ class UserResource extends Resource
                     ->tooltip('Editar este usuário')
                     ->color('yellow'),
                 DeleteAction::make()
-                    ->label('Deletar')  
+                    ->label('Deletar')
                     ->icon('heroicon-o-trash')
                     ->tooltip('Remover este usuário')
                     ->color('red'),
