@@ -41,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->brandName('Apoio Pedagogico Essencial')
+            ->brandName('Essencial - Acompanhamento Pedagogico')
             ->favicon('images/logo.png')
             ->colors([
                 'primary' => '#BC3C3F',
