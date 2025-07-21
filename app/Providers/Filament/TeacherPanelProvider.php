@@ -58,7 +58,6 @@ class TeacherPanelProvider extends PanelProvider
                         MyImages::make()
                             ->directory('images/myImages')
                     ),
-                FilamentSpatieRolesPermissionsPlugin::make()
                  
             ])
             ->middleware([

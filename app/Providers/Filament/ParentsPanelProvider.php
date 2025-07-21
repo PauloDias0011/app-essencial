@@ -66,7 +66,6 @@ class ParentsPanelProvider extends PanelProvider
                         MyImages::make()
                             ->directory('images/myImages')
                     ),
-                FilamentSpatieRolesPermissionsPlugin::make()
                  
             ])
             ->middleware([
