@@ -10,32 +10,45 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Form;
 use Filament\Actions\Action;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Livewire;
 use Illuminate\Support\Collection;
 use Guava\Calendar\ValueObjects\Event;
-
+use Illuminate\Support\Facades\Auth;
 class MyCalendarWidget extends CalendarWidget
 {
     protected string $calendarView = 'dayGridMonth';
     protected bool $eventClickEnabled = true;
 
 
-    /**
-     * Obtém os eventos do calendário.
-     */
-    public function getEvents(array $fetchInfo = []): Collection | array
-    {
-        return Schedule::whereBetween('scheduled_at', [$fetchInfo['start'], $fetchInfo['end']])
-            ->get()
-            ->map(fn ($schedule) => Event::make()
-                ->key($schedule->id)
-                ->title("📅 {$schedule->student->name} | Prof: {$schedule->professor->name}")
-                ->start($schedule->scheduled_at)
-                ->end($schedule->scheduled_at->copy()->addHour())
-                ->url(route('filament.admin.resources.schedules.view', ['record' => $schedule->id])) // 🔹 Link correto para a visualização
-            
-            );
+  public function getEvents(array $fetchInfo = []): Collection | array
+{
+    $user = Auth::user();
+    $panelId = Filament::getCurrentPanel()->getId();
+
+    $query = Schedule::query()->whereBetween('scheduled_at', [
+        $fetchInfo['start'],
+        $fetchInfo['end'],
+    ]);
+
+    if ($panelId === 'teacher') {
+        $query->where('professor_id', $user->id);
     }
+
+    if ($panelId === 'parents') {
+        $query->whereHas('student', function ($q) use ($user) {
+            $q->where('parent_id', $user->id);
+        });
+    }
+
+    return $query->get()->map(fn($schedule) => Event::make()
+        ->key($schedule->id)
+        ->title("📅 {$schedule->student->name} | Prof: {$schedule->professor->name}")
+        ->start($schedule->scheduled_at)
+        ->end($schedule->scheduled_at->copy()->addHour())
+        ->url(route('filament.admin.resources.schedules.view', ['record' => $schedule->id]))
+    );
+}
 
     /**
      * Ação ao clicar em uma data para abrir o modal de criação.
@@ -76,17 +89,21 @@ class MyCalendarWidget extends CalendarWidget
         ]);
     }
     
-    public function getHeaderActions(): array
-    {
-        return [
-            Action::make('createSchedule')
-                ->label('➕ Adicionar Agendamento')
-                ->color('primary')
-                ->modalHeading('Criar Novo Agendamento')
-                ->form($this->getFormSchema())
-                ->action(fn ($data) => Schedule::create($data)),
-        ];
-    }
+ public function getHeaderActions(): array
+{
+    return [
+        Action::make('createSchedule')
+            ->label('➕ Adicionar Agendamento')
+            ->color('primary')
+            ->modalHeading('Criar Novo Agendamento')
+            ->form($this->getFormSchema())
+            ->action(fn ($data) => \App\Models\Schedule::create($data))
+            ->visible(function () {
+                $user = Auth::user();
+                return $user->hasRole('Admin') || $user->hasRole('Professor');
+            }),
+    ];
+}
 
     /**
      * Define o formulário de criação e edição do agendamento.

@@ -26,6 +26,8 @@ use App\Models\ClassPlan;
 use Filament\Infolists\Components\Split;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Facades\Filament;
 
 class ScheduleResource extends Resource
 {
@@ -184,4 +186,26 @@ class ScheduleResource extends Resource
 
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
+    $user = Auth::user();
+    $panelId = Filament::getCurrentPanel()->getId();
+
+    // Painel dos pais/responsáveis: mostrar apenas os planos dos filhos
+    if ($panelId === 'parents') {
+        return $query->whereHas('student', function ($q) use ($user) {
+            $q->where('parent_id', $user->id);
+        });
+    }
+
+    // Painel dos professores: mostrar apenas os planos do próprio professor
+    if ($panelId === 'teacher') {
+        return $query->where('professor_id', $user->id);
+    }
+
+    // Admin vê tudo
+    return $query;
+}
 }

@@ -3,12 +3,9 @@
 namespace App\Providers\Filament;
 
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
-use App\Filament\Widgets\DashboardWidgets as WidgetsDashboardWidgets;
-use App\Filament\Widgets\MyCalendarWidget;
-use App\Filament\Widgets\RecentClassPlansTable as WidgetsRecentClassPlansTable;
-use App\Filament\Widgets\SchedulesCalendar;
-use App\Filament\Widgets\UpcomingSchedulesCalendar as WidgetsUpcomingSchedulesCalendar;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use App\Filament\Resources\ClassPlanResource;
+use App\Filament\Resources\GradeResource;
+use App\Filament\Resources\ScheduleResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,26 +14,26 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use GradeTrendChart;
+use Filament\Widgets;
+use App\Filament\Resources\StudentResource;
+use App\Filament\Widgets\MyCalendarWidget;
+use App\Models\ClassPlan;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use MonthlyExpensesChart;
-use StudentDistributionChart;
 use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
 use Swis\Filament\Backgrounds\ImageProviders\MyImages;
 
-class AdminPanelProvider extends PanelProvider
+class ParentsPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('parents')
+            ->path('/parents')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -46,14 +43,22 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => '#BC3C3F',
             ])
-            ->databaseTransactions()
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Parents/Resources'), for: 'App\\Filament\\Parents\\Resources')
+            ->discoverPages(in: app_path('Filament/Parents/Pages'), for: 'App\\Filament\\Parents\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->databaseNotifications()
-            ->databaseNotificationsPolling('360s')
+            ->resources([
+                StudentResource::class,
+                ClassPlanResource::class,
+                GradeResource::class,
+                ScheduleResource::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Parents/Widgets'), for: 'App\\Filament\\Parents\\Widgets')
+            ->widgets([
+                MyCalendarWidget::class,
+
+            ])
             ->plugins([
                
             FilamentBackgroundsPlugin::make()
@@ -64,16 +69,6 @@ class AdminPanelProvider extends PanelProvider
                 FilamentSpatieRolesPermissionsPlugin::make()
                  
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                WidgetsDashboardWidgets::class,
-                StudentDistributionChart::class,
-                WidgetsRecentClassPlansTable::class,
-                WidgetsUpcomingSchedulesCalendar::class,
-                MonthlyExpensesChart::class,
-                SchedulesCalendar::class,   
-                MyCalendarWidget::class,
-                ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

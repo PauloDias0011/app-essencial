@@ -24,6 +24,9 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Tables\Enums\FiltersLayout;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Filament\Facades\Filament;
 
 class ClassPlanResource extends Resource
 {
@@ -151,4 +154,27 @@ class ClassPlanResource extends Resource
             'view' => Pages\ViewClassPlan::route('/{record}'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
+    $user = Auth::user();
+    $panelId = Filament::getCurrentPanel()->getId();
+
+    // Painel dos pais/responsáveis: mostrar apenas os planos dos filhos
+    if ($panelId === 'parents') {
+        return $query->whereHas('student', function ($q) use ($user) {
+            $q->where('parent_id', $user->id);
+        });
+    }
+
+    // Painel dos professores: mostrar apenas os planos do próprio professor
+    if ($panelId === 'teacher') {
+        return $query->where('professor_id', $user->id);
+    }
+
+    // Admin vê tudo
+    return $query;
+}
+    
 }
