@@ -3,7 +3,12 @@
 namespace App\Providers\Filament;
 
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+use App\Filament\Resources\ClassPlanResource;
+use App\Filament\Resources\ExpenseResource;
+use App\Filament\Resources\GradeResource;
+use App\Filament\Resources\ScheduleResource;
 use App\Filament\Resources\StudentResource;
+use App\Filament\Widgets\MyCalendarWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -44,12 +49,16 @@ class TeacherPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
              ->resources([
-            StudentResource::class,
+                StudentResource::class,
+                ClassPlanResource::class,
+                GradeResource::class,
+                ScheduleResource::class,
+                ExpenseResource::class,
         ])
             ->discoverWidgets(in: app_path('Filament/Teacher/Widgets'), for: 'App\\Filament\\Teacher\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                MyCalendarWidget::class,
+
             ])
             ->plugins([
                
